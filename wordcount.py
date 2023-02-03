@@ -1,35 +1,35 @@
 import PyPDF2
-import collections
-import csv
-import tkinter as tk
-from tkinter import filedialog
+from collections import Counter
+import string
+import nltk
+nltk.download("words")
+from nltk.corpus import words
+import pyperclip
 
-# Prompt the user to select a PDF file
-root = tk.Tk()
-root.withdraw()
-file_path = filedialog.askopenfilename(filetypes=[("PDF Files", "*.pdf")])
+filename = input("Enter the filename: ")
+with open(filename, 'rb') as file:
+    pdf_reader = PyPDF2.PdfReader(file)
+    words = []
+    for page_num in range(pdf_reader._get_num_pages()):
+        page = pdf_reader._get_page(page_num)
+        text = page.extract_text().strip().split()
+        words.extend(text)
 
-# Open the selected PDF file
-with open(file_path, "rb") as file:
-    reader = PyPDF2.PdfFileReader(file)
-    text = ""
-    # Extract the text from each page of the PDF
-    for i in range(reader.numPages):
-        page = reader.getPage(i)
-        text += page.extractText()
+    words = [word.lower().translate(str.maketrans("", "", string.punctuation)) for word in words]
+    word_counts = Counter(words)
 
-# Split the text into words
-words = text.split()
+    english_words = set(nltk.corpus.words.words())
+    sorted_words = sorted(word_counts.items(), key=lambda x: x[1], reverse=True)
 
-# Count the frequency of each word
-word_counts = collections.Counter(words)
+    result = []
+    for word, count in sorted_words:
+        if word in english_words:
+            result.append(word)
 
-# Sort the word frequency in descending order
-sorted_word_counts = sorted(word_counts.items(), key=lambda x: x[1], reverse=True)
+    result_str = '\n'.join(result)
+    print(result_str)
 
-# Write the word frequency to a CSV file
-with open("word_counts.csv", "w", newline="") as file:
-    writer = csv.writer(file)
-    writer.writerow(["Word", "Frequency"])
-    for word, frequency in sorted_word_counts:
-        writer.writerow([word, frequency])
+    with open('words.txt', 'w') as f:
+        f.write(result_str)
+
+    pyperclip.copy(result_str)
