@@ -5,7 +5,6 @@ Scan a pdf and create a distinct list of the words in the document ordered in de
 
 The following packages are required to run the program:
 
-pip install PyPDF2
-pip install nltk
+pip install PyPDF2 nltk
 
 The program will prompt you for the file name. Enter the full path of the file you want to process.
